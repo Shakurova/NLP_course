@@ -141,7 +141,7 @@ def spearman(result):
 if __name__ == '__main__':
     documents = parse_file()
     method1()
-    print('='*30)
+    print('=' * 30)
     method2()
     print('=' * 30)
     print('Метод 2 работает лучше  ')
