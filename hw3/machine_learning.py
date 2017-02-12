@@ -7,8 +7,12 @@ import numpy as np
 from nltk.tokenize import TreebankWordTokenizer
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn import grid_search, svm
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import mlab
+
+
 
 tokenizer = TreebankWordTokenizer()
 vowels = [u'а', u'о', u'э', u'и', u'у', u'ы', u'е', u'ё', u'ю', u'я']
@@ -162,7 +166,7 @@ if __name__ == '__main__':
 	anna_data = []
 	sonets_data = []
 
-	# print u'Анна Каренина Толстого:'
+	# обучающий корпус
 	sentances_a_train = open_file('anna_train.txt')
 	for _s in sentances_a_train:
 		vector = vectoriser(_s)
@@ -174,7 +178,7 @@ if __name__ == '__main__':
 
 	# print('='*60)
 
-	# print u'Сонеты Шекспира:'
+	# обучающий корпус
 	sentances_s_train = open_file('sonets_train.txt')
 	for _s in sentances_s_train:
 		vector = vectoriser(_s)
@@ -196,6 +200,7 @@ if __name__ == '__main__':
 	Y_test = []
 	all_sentances = []
 
+	# тестовый корпус
 	sentances_a_test = open_file('anna_test.txt')
 	for _s in sentances_a_test:
 		vector = vectoriser(_s)
@@ -208,6 +213,7 @@ if __name__ == '__main__':
 			_s = _s.replace('\t', ' ')
 			all_sentances.append(_s.encode('utf-8'))
 
+	# тестовый корпус
 	sentances_s_test = open_file('sonets_test.txt')
 	for _s in sentances_s_test:
 		vector = vectoriser(_s)
@@ -232,6 +238,12 @@ if __name__ == '__main__':
 	print classification_report(Y_test, Y_predicted)
 	print u'The accuracy score is {:.2%}'.format(accuracy_score(Y_test, Y_predicted))
 
+	clf = svm.LinearSVC()
+	clf.fit(X_train_2, Y_train_2)
+	Y_predicted = clf.predict(X_test)
+	print classification_report(Y_test, Y_predicted)
+	print u'The accuracy score is {:.2%}'.format(accuracy_score(Y_test, Y_predicted))
+
 	# Запись результов в файл
 	output = pd.DataFrame(data={'Class': Y_predicted, 'Real': Y_test,
 								'Text': all_sentances})
@@ -245,12 +257,35 @@ if __name__ == '__main__':
 	print u'Текст "', a2, u'" относится к классу', clf.predict(vectoriser(a2)), u', правильный класс  ["a"]'
 
 	print u'Распределение данных по предложениям по двум осям, дающим наилучшее разделение (показывает, что тексты слабо различимы)'
+	anna_data = []
+	sonets_data = []
+
+	# весь корпус
+	sentances_a_train = open_file('anna.txt')
+	for _s in sentances_a_train:
+		vector = vectoriser(_s)
+		if len(vector) == 5:
+			anna_data.append(vector)
+
+	# весь корпус
+	sentances_s_train = open_file('sonets.txt')
+	for _s in sentances_s_train:
+		vector = vectoriser(_s)
+		if len(vector) == 5:
+			sonets_data.append(vector)
+
 	anna_data = np.array(anna_data)
 	sonets_data = np.array(sonets_data)
 
+	# Распределение
 	plt.figure()
 	c1, c2 = 0, 1
-	plt.plot(anna_data[:, c1], anna_data[:, c2], 'og',
-			 sonets_data[:, c1], sonets_data[:, c2], 'sb')
+	plt.plot(anna_data[:, c1], anna_data[:, c2], 'og', sonets_data[:, c1], sonets_data[:, c2], 'sb')
 	plt.show()
 
+	# PCA
+	data = np.vstack((anna_data, sonets_data))
+	p = mlab.PCA(data, True)
+	N = len(anna_data)
+	plt.plot(p.Y[:N, 0], p.Y[:N, 1], 'og', p.Y[N:, 0], p.Y[N:, 1], 'sb')
+	plt.show()
