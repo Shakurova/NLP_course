@@ -9,8 +9,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set(color_codes=True)
 
 tokenizer = TreebankWordTokenizer()
 vowels = [u'а', u'о', u'э', u'и', u'у', u'ы', u'е', u'ё', u'ю', u'я']
@@ -161,6 +159,8 @@ if __name__ == '__main__':
 	# Создание обучающей выборки
 	X_train = []
 	Y_train = []
+	anna_data = []
+	sonets_data = []
 
 	# print u'Анна Каренина Толстого:'
 	sentances_a_train = open_file('anna_train.txt')
@@ -170,6 +170,7 @@ if __name__ == '__main__':
 		if len(vector) == 5:
 			X_train.append(vector)
 			Y_train.append('a')
+			anna_data.append(vector)
 
 	# print('='*60)
 
@@ -181,6 +182,7 @@ if __name__ == '__main__':
 		if len(vector) == 5:
 			X_train.append(vector)
 			Y_train.append('s')
+			sonets_data.append(vector)
 
 	X_train = np.array(X_train)
 	Y_train = np.array(Y_train)
@@ -241,3 +243,14 @@ if __name__ == '__main__':
 	print u'Текст "', s2, u'" относится к классу', clf.predict(vectoriser(s2)), u', правильный класс  ["s"]'
 	print u'Текст "', a1, u'" относится к классу', clf.predict(vectoriser(a1)), u', правильный класс  ["a"]'
 	print u'Текст "', a2, u'" относится к классу', clf.predict(vectoriser(a2)), u', правильный класс  ["a"]'
+
+	print u'Распределение данных по предложениям по двум осям, дающим наилучшее разделение (показывает, что тексты слабо различимы)'
+	anna_data = np.array(anna_data)
+	sonets_data = np.array(sonets_data)
+
+	plt.figure()
+	c1, c2 = 0, 1
+	plt.plot(anna_data[:, c1], anna_data[:, c2], 'og',
+			 sonets_data[:, c1], sonets_data[:, c2], 'sb')
+	plt.show()
+
